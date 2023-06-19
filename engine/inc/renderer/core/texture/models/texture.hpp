@@ -73,6 +73,7 @@ class Texture {
 
   u32 getTextureSize() const;
 
+  TextureBuilderData* getData();
   /**
    * Check if texture is linked with MeshMaterial/Sprite.
    * @param t_id

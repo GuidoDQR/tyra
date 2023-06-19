@@ -157,6 +157,24 @@ u32 Texture::getTextureSize() const {
   return widthBlocks * heightBlocks * 256;
 }
 
+TextureBuilderData* Texture::getData(){
+  auto* result = new TextureBuilderData();
+  
+  result->data = core->data;
+  result->bpp = core->bpp;
+  result->gsComponents = core->components;
+  result->width = core->width;
+  result->height = core->height;
+
+  result->clut = clut->data;
+  result->clutBpp = clut->bpp;
+  result->clutGsComponents = clut->components;
+  result->clutWidth = clut->width;
+  result->clutHeight = clut->height;
+
+  return result;
+}
+
 void Texture::setDefaultWrapSettings() {
   wrap.horizontal = WRAP_REPEAT;
   wrap.vertical = WRAP_REPEAT;

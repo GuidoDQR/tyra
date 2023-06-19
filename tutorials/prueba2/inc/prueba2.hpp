@@ -16,10 +16,10 @@
 
 namespace Tyra {
 
-class Tutorial11 : public Game {
+class Prueba : public Game {
  public:
-  Tutorial11(Engine* engine);
-  ~Tutorial11();
+  Prueba(Engine* engine);
+  ~Prueba();
 
   void init();
   void loop();
@@ -32,6 +32,7 @@ class Tutorial11 : public Game {
   void getFrameBuffer(unsigned char* pixelBuffer);
   void createFrameTexture(unsigned char* data, Vec2 size, float scale);
   bool existFrameTexture(Sprite* framebuffer);
+  void createTexture();
   Engine* engine;
   Pad* pad;
   
@@ -41,9 +42,11 @@ class Tutorial11 : public Game {
   Sprite spr_frameBuffer;
   Sprite mask;
   Sprite punto;
-  unsigned char* pixel_char;
+  unsigned char* pixel_fb;
   //alignas(128) unsigned char pixel_char[512*448*4];
   unsigned char* pixel_frameBuffer_before; // pixeles antes del mask
+  unsigned char* pixel_fb_after;
+  bool drawFB;
 };
 
 }  // namespace Tyra

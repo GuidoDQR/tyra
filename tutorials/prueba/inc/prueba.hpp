@@ -16,10 +16,10 @@
 
 namespace Tyra {
 
-class Tutorial11 : public Game {
+class Prueba : public Game {
  public:
-  Tutorial11(Engine* engine);
-  ~Tutorial11();
+  Prueba(Engine* engine);
+  ~Prueba();
 
   void init();
   void loop();
@@ -32,6 +32,7 @@ class Tutorial11 : public Game {
   void getFrameBuffer(unsigned char* pixelBuffer);
   void createFrameTexture(unsigned char* data, Vec2 size, float scale);
   bool existFrameTexture(Sprite* framebuffer);
+  void createTexture();
   Engine* engine;
   Pad* pad;
   

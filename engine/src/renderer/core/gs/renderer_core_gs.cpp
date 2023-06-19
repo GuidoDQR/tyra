@@ -57,7 +57,7 @@ void RendererCoreGS::allocateBuffers() {
   frameBuffers[0].psm = GS_PSM_32;
   frameBuffers[0].address = vram.allocateBuffer(
       frameBuffers[0].width, frameBuffers[0].height, frameBuffers[0].psm);
-
+  printf("address buffer: %d\n",frameBuffers[0].address);
   frameBuffers[1].width = frameBuffers[0].width;
   frameBuffers[1].height = frameBuffers[0].height;
   frameBuffers[1].mask = frameBuffers[0].mask;

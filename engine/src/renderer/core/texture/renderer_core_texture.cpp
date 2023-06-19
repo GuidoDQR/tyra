@@ -48,7 +48,7 @@ RendererCoreTextureBuffers RendererCoreTexture::useTexture(
     }
     currentAllocations.clear();
   }
-
+  //printf("nueva textura\n");
   auto newTexBuffer = sender.allocate(t_tex);
   path3->sendTexture(t_tex, newTexBuffer);
   registerAllocation(newTexBuffer);

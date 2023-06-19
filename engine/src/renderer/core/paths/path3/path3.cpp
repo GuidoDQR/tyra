@@ -66,6 +66,7 @@ void Path3::sendTexture(const Texture* texture,
   packet2_reset(texturePacket, false);
 
   int coreWidth = texBuffers.core->width <= 64 ? 64 : texBuffers.core->width;
+  //printf("path 3: address core: %d. width: %d\n",texBuffers.core->address, coreWidth);
   packet2_update(texturePacket,
                  draw_texture_transfer(texturePacket->base, texture->core->data,
                                        texture->getWidth(),

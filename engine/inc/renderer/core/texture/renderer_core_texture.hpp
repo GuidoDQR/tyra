@@ -35,13 +35,14 @@ class RendererCoreTexture {
   /** Called by renderer during rendering */
   void updateClutBuffer(texbuffer_t* clutBuffer);
 
+  RendererCoreTextureBuffers getAllocatedBuffersByTextureId(const u32& id);
+
+  void unregisterAllocation(const u32& textureId);
  private:
   std::vector<RendererCoreTextureBuffers> currentAllocations;
 
   void initClut();
   void registerAllocation(const RendererCoreTextureBuffers& t_buffers);
-  void unregisterAllocation(const u32& textureId);
-  RendererCoreTextureBuffers getAllocatedBuffersByTextureId(const u32& id);
 
   RendererCoreGS* gs;
   RendererCoreTextureSender sender;

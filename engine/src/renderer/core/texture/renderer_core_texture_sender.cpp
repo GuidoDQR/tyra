@@ -63,6 +63,7 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureCore(
   result->info.components = core->components;
 
   auto address = gs->vram.allocate(*core);
+  //TYRA_LOG("address:",address);
   TYRA_ASSERT(address > 0, "Texture buffer allocation error, no memory!");
   result->address = address;
 
