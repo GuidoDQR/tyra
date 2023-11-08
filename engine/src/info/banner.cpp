@@ -3,9 +3,10 @@
 #   |     \/   ____| |___|
 #   |     |   |   \  |   |
 #-----------------------------------------------------------------------
-# Copyright 2022-2022, tyra - https://github.com/h4570/tyrav2
+# Copyright 2022-2023, tyra - https://github.com/h4570/tyrav2
 # Licensed under Apache License 2.0
 # Sandro Sobczyński <sandro.sobczynski@gmail.com>
+# André Guilherme <andregui17@outlook.com>
 */
 
 #include "info/banner.hpp"
@@ -59,7 +60,7 @@ void Banner::show(Renderer* renderer) {
   std::cout << "          |     \\/   ____| |___|\n";
   std::cout << "          |     |   |   \\  |   |\n";
   std::cout << "-----------------------------------------\n";
-  std::cout << "Copyright 2022\n";
+  std::cout << "Copyright 2022 - 2023\n";
   std::cout << "Repository: https://github.com/h4570/tyra\n";
   std::cout << "Licensed under Apache License 2.0\n";
   std::cout << "Version: ";
