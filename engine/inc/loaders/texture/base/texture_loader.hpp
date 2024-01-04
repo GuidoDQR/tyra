@@ -22,7 +22,7 @@ class TextureLoader {
    * Sets size, name and data.
    * @param fullpath Full path to texture file. Example: "host:texture.png"
    */
-  virtual TextureBuilderData* load(const char* fullpath) = 0;
+  virtual TextureBuilderData* load(const char* fullpath, int rectX, int rectY, int rectWidth, int rectHeight, bool rect) = 0;
 
   inline TextureBuilderData* load(const std::string& fullpath) {
     return load(fullpath.c_str());

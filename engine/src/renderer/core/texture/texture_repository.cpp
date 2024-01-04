@@ -97,13 +97,34 @@ void TextureRepository::free(const u32& t_texId) {
   delete tex;
 }
 
-Texture* TextureRepository::add(const char* fullpath) {
+Texture* TextureRepository::add(const char* fullpath){
+  return add(fullpath, Vec2(0,0), Vec2(0,0), false);
+}
+
+Texture* TextureRepository::add(const char* fullpath, Vec2 pos, Vec2 size, const bool rect) {
   TextureLoader& loader = texLoaderSelector.getLoaderByFileName(fullpath);
 
-  auto* data = loader.load(fullpath);
+  if(rect == true){
+    TYRA_ASSERT(size.x <= 512 && size.y <= 512,
+              "Tyra supports only 512x512 textures max!");
+
+    TYRA_ASSERT(size.x == 8 || size.x == 16 ||
+                    size.x == 32 || size.x == 64 ||
+                    size.x == 128 || size.x == 256 ||
+                    size.x == 512,
+                "Texture width/height should be 8/16/32/64/128/256/512!");
+
+    TYRA_ASSERT(size.y == 8 || size.y == 16 ||
+                    size.y == 32 || size.y == 64 ||
+                    size.y == 128 || size.y == 256 ||
+                    size.y == 512,
+                "Texture width/height should be 8/16/32/64/128/256/512!");
+  }
+  
+  auto* data = loader.load(fullpath,pos.x,pos.y,size.x,size.y,rect);
   Texture* texture = new Texture(data);
   delete data;
-
+  texture->print();
   textures.push_back(texture);
   return texture;
 }

@@ -29,7 +29,9 @@ struct PngClut {
 };
 
 /** Based on GsKit texture loading - thank you guys! */
-TextureBuilderData* PngLoader::load(const char* fullPath) {
+TextureBuilderData* PngLoader::load(const char* fullPath, int t_rectX,
+                                    int t_rectY, int t_rectWidth,
+                                    int t_rectHeight, const bool t_rect) {
   std::string path = fullPath;
   TYRA_ASSERT(!path.empty(), "Provided path is empty!");
 
@@ -40,7 +42,6 @@ TextureBuilderData* PngLoader::load(const char* fullPath) {
 
   png_structp pngPtr;
   png_infop infoPtr;
-  png_uint_32 width, height;
   png_bytep* rowPointers = nullptr;
 
   u32 sigRead = 0;
@@ -69,12 +70,25 @@ TextureBuilderData* PngLoader::load(const char* fullPath) {
   png_read_update_info(pngPtr, infoPtr);
 
   auto* result = new TextureBuilderData();
-  result->width = width;
-  result->height = height;
+
+  rectX = t_rectX;
+  rectY = t_rectY;
+
+  if (t_rect == true) {
+    printf("before width: %d, height:%d\n", result->width, result->height);
+    result->width = t_rectWidth;
+    result->height = t_rectHeight;
+    printf("after width: %d, height:%d\n", result->width, result->height);
+
+  } else {
+    result->width = width;
+    result->height = height;
+  }
+
   result->name = filename;
 
   auto updatedColorType = png_get_color_type(pngPtr, infoPtr);
-
+  // TYRA_BREAKPOINT();
   if (updatedColorType == PNG_COLOR_TYPE_PALETTE) {
     handlePalletized(result, pngPtr, infoPtr, rowPointers, bitDepth);
   } else if (updatedColorType == PNG_COLOR_TYPE_RGB_ALPHA) {
@@ -94,16 +108,15 @@ TextureBuilderData* PngLoader::load(const char* fullPath) {
 void PngLoader::handle32bpp(TextureBuilderData* result, png_structp pngPtr,
                             png_infop infoPtr, png_bytep* rowPointers) {
   int rowBytes = png_get_rowbytes(pngPtr, infoPtr);
-
+  // TYRA_BREAKPOINT();
   result->gsComponents = TEXTURE_COMPONENTS_RGBA;
   result->bpp = bpp32;
   result->data = static_cast<unsigned char*>(memalign(
       128, getTextureSize(result->width, result->height, result->bpp)));
 
-  rowPointers =
-      static_cast<png_bytep*>(calloc(result->height, sizeof(png_bytep)));
+  rowPointers = static_cast<png_bytep*>(calloc(height, sizeof(png_bytep)));
 
-  for (int row = 0; row < result->height; row++)
+  for (int row = 0; row < (int)height; row++)
     rowPointers[row] = static_cast<png_bytep>(malloc(rowBytes));
 
   png_read_image(pngPtr, rowPointers);
@@ -111,14 +124,27 @@ void PngLoader::handle32bpp(TextureBuilderData* result, png_structp pngPtr,
   struct PngPixel4* pixels = (struct PngPixel4*)result->data;
 
   int k = 0;
-  for (int i = 0; i < result->height; i++) {
-    for (int j = 0; j < result->width; j++) {
+  // TYRA_BREAKPOINT();
+  printf("pase por los datos rect\n");
+  for (int i = rectY; i < rectY + result->height; i++) {
+    // printf("i: %d\n", i);
+    // if(i == rectY + result->height) {break;}
+    for (int j = rectX; j < rectX + result->width; j++) {
       pixels[k].r = rowPointers[i][4 * j];
       pixels[k].g = rowPointers[i][4 * j + 1];
       pixels[k].b = rowPointers[i][4 * j + 2];
-      pixels[k++].a = ((int)rowPointers[i][4 * j + 3] * 128 / 255);
+      pixels[k].a = ((int)rowPointers[i][4 * j + 3] * 128 / 255);
+      // if (i < 64 && j < (32)) {
+        printf("k: %05d i,j:[%02d][%02d]. %d,%d,%d,%d\n", k, i, j, pixels[k].r,
+               pixels[k].g, pixels[k].b, pixels[k].a);
+      // }
+      k++;
     }
   }
+  printf("width: %d, height:%d\n", width, height);
+  printf("size: %d\n",
+         getTextureSize(result->width, result->height, result->bpp));
+  printf("rowbytes:%d\n", rowBytes);  // 512 ancho
 
   for (int row = 0; row < result->height; row++) free(rowPointers[row]);
 

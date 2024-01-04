@@ -64,8 +64,22 @@ class TextureRepository {
    * Add unlinked texture.
    * @param fullpath Full path to texture file. Example: "host:texture.png"
    */
+  Texture* add(const char* fullpath, Vec2 pos, Vec2 size, const bool rect);
+
+  /**
+   * Add unlinked texture.
+   * @param fullpath Full path to texture file. Example: "host:texture.png"
+   */
   inline Texture* add(const std::string& fullpath) {
     return add(fullpath.c_str());
+  }
+
+  /**
+   * Add unlinked texture.
+   * @param fullpath Full path to texture file. Example: "host:texture.png"
+   */
+  inline Texture* add(const std::string& fullpath, Vec2 pos, Vec2 size){
+    return add(fullpath.c_str(),pos, size, true);
   }
 
   /**

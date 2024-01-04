@@ -37,13 +37,16 @@ class PngLoader : public TextureLoader {
   PngLoader();
   ~PngLoader();
 
-  inline TextureBuilderData* load(const std::string& fullpath) {
-    return load(fullpath.c_str());
+  inline TextureBuilderData* load(const std::string& fullpath, int t_rectX, int t_rectY, int t_rectWidth, int t_rectHeight, const bool t_rect) {
+    return load(fullpath.c_str(),t_rectX,t_rectY,t_rectWidth,t_rectHeight, t_rect);
   }
 
-  TextureBuilderData* load(const char* fullpath);
+  TextureBuilderData* load(const char* fullpath, int t_rectX, int t_rectY, int t_rectWidth, int t_rectHeight, const bool t_rect);
 
  private:
+  int rectX, rectY; //rectWidth, rectHeight;
+  png_uint_32 width, height;
+
   void handle32bpp(TextureBuilderData* result, png_structp pngPtr,
                    png_infop infoPtr, png_bytep* rowPointers);
 
