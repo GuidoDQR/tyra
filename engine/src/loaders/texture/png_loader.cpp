@@ -97,6 +97,42 @@ void PngLoader::handle32bpp(TextureBuilderData* result, png_structp pngPtr,
 
   result->gsComponents = TEXTURE_COMPONENTS_RGBA;
   result->bpp = bpp32;
+  
+  int originalWidth = result->width;
+  int originalHeight = result->height;
+  
+  if(result->width == 8){
+    result->width = 8;
+  }else if(result->width <= 16){
+    result->width = 16;
+  }else if(result->width <= 32){
+    result->width = 32;
+  }else if(result->width <= 64){
+    result->width = 64;
+  }else if(result->width <= 128){
+    result->width = 128;
+  }else if(result->width <= 256){
+    result->width = 256;
+  }else if(result->width <= 512){
+    result->width = 512;
+  }
+
+  if(result->height == 8){
+    result->height = 8;
+  }else if(result->height <= 16){
+    result->height = 16;
+  }else if(result->height <= 32){
+    result->height = 32;
+  }else if(result->height <= 64){
+    result->height = 64;
+  }else if(result->height <= 128){
+    result->height = 128;
+  }else if(result->height <= 256){
+    result->height = 256;
+  }else if(result->height <= 512){
+    result->height = 512;
+  }
+
   result->data = static_cast<unsigned char*>(memalign(
       128, getTextureSize(result->width, result->height, result->bpp)));
 
@@ -111,12 +147,24 @@ void PngLoader::handle32bpp(TextureBuilderData* result, png_structp pngPtr,
   struct PngPixel4* pixels = (struct PngPixel4*)result->data;
 
   int k = 0;
-  for (int i = 0; i < result->height; i++) {
-    for (int j = 0; j < result->width; j++) {
+  for (int i = 0; i < originalHeight; i++) {
+    for (int j = 0; j < originalWidth; j++) {
       pixels[k].r = rowPointers[i][4 * j];
       pixels[k].g = rowPointers[i][4 * j + 1];
       pixels[k].b = rowPointers[i][4 * j + 2];
       pixels[k++].a = ((int)rowPointers[i][4 * j + 3] * 128 / 255);
+    }
+    for(int j = 0; j < result->width-originalWidth;j++){
+      pixels[k].r = 0;
+      pixels[k].g = 0;
+      pixels[k].b = 0;
+      pixels[k++].a = 0;
+    }
+  }
+
+  for(int i = 0; i < result->height-originalHeight;i++){
+    for (int j = 0; j < result->width; j++) {
+      pixels[k++].a = 0;
     }
   }
 
