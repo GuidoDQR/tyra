@@ -23,6 +23,7 @@ class Renderer2D {
   void init(RendererCore* rendererCore);
   void render(const Sprite* sprite);
   void render(const Sprite& sprite);
+  void renderRotate(const Sprite& sprite, float angle);
 
  private:
   RendererCore* core;
