@@ -268,8 +268,6 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
 
   auto* packet = packets[context];
 
-  static bool test = true;
-
   packet2_reset(packet, false);
   packet2_update(packet, draw_primitive_xyoffset(packet->base, 0, SCREEN_CENTER,
                                                  SCREEN_CENTER));
