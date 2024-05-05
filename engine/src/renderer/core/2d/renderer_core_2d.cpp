@@ -21,6 +21,7 @@ RendererCore2D::RendererCore2D() {
   packets[1] = packet2_create(16, P2_TYPE_NORMAL, P2_MODE_NORMAL, 0);
   rects[0] = new texrect_t;
   rects[1] = new texrect_t;
+  ztest.enable = DRAW_ENABLE;
 
   setPrim();
   setLod();
@@ -291,6 +292,19 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
   dma_channel_send_packet2(packet, DMA_CHANNEL_GIF, true);
 
   context = !context;
+}
+
+void RendererCore2D::pixelTest(atest_t* alpha, dtest_t* destAlpha,
+                               unsigned char zMethod) {
+  auto* packet = packets[context];
+  packet2_reset(packet, false);
+
+  ztest.method = zMethod;
+  packet2_update(packet,
+                 draw_pixel_test(packet->next, 0, alpha, destAlpha, &ztest));
+
+  dma_channel_wait(DMA_CHANNEL_GIF, 0);
+  dma_channel_send_packet2(packet, DMA_CHANNEL_GIF, true);
 }
 
 void RendererCore2D::setTextureMappingType(
