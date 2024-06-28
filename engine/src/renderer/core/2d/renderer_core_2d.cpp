@@ -238,16 +238,15 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
       Vec2(sprite.size.x * sprite.scale, sprite.size.y * sprite.scale);
 
   // center of sprite
-  Vec2 pivot = Vec2(-(sprite.size.x * sprite.scale / 2),
-                    -(sprite.size.y * sprite.scale / 2));
+  Vec2 pivot = Vec2(0.0f, 0.0f);
 
   // Top Left
   rect->v0.x = sprite.position.x + pivot.x * angleCos - pivot.y * angleSin;
   rect->v0.y = sprite.position.y + pivot.y * angleCos + pivot.x * angleSin;
   rect->v0.z = (u32)-1;
 
-  rect->v0.x -= pivot.x;
-  rect->v0.y -= pivot.y;
+  // rect->v0.x -= pivot.x;
+  // rect->v0.y -= pivot.y;
 
   // Bottom Left
   rect->v1.x = sprite.position.x + pivot.x * angleCos -
@@ -256,8 +255,8 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
                pivot.x * angleSin;
   rect->v1.z = (u32)-1;
 
-  rect->v1.x -= pivot.x;
-  rect->v1.y -= pivot.y;
+  // rect->v1.x -= pivot.x;
+  // rect->v1.y -= pivot.y;
 
   // Top Right
   rect2.v0.x = sprite.position.x + (pivot.x + sizeScaled.x) * angleCos -
@@ -266,8 +265,8 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
                (sizeScaled.x + pivot.x) * angleSin;
   rect2.v0.z = (u32)-1;
 
-  rect2.v0.x -= pivot.x;
-  rect2.v0.y -= pivot.y;
+  // rect2.v0.x -= pivot.x;
+  // rect2.v0.y -= pivot.y;
 
   // Bottom Right
   rect2.v1.x = sprite.position.x + (sizeScaled.x + pivot.x) * angleCos -
@@ -276,8 +275,8 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
                (sizeScaled.x + pivot.x) * angleSin;
   rect2.v1.z = (u32)-1;
 
-  rect2.v1.x -= pivot.x;
-  rect2.v1.y -= pivot.y;
+  // rect2.v1.x -= pivot.x;
+  // rect2.v1.y -= pivot.y;
 
   auto* packet = packets[context];
 
