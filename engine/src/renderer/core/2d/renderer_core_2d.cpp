@@ -236,36 +236,48 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
 
   Vec2 sizeScaled =
       Vec2(sprite.size.x * sprite.scale, sprite.size.y * sprite.scale);
-  Vec2 centerPos = Vec2(sprite.position.x + sprite.size.x / 2,
-                        sprite.position.y + sprite.size.y / 2);
+
+  // center of sprite
+  Vec2 pivot = Vec2(-(sprite.size.x * sprite.scale / 2),
+                    -(sprite.size.y * sprite.scale / 2));
 
   // Top Left
-  rect->v0.x = centerPos.x + (-sizeScaled.x / 2) * angleCos -
-               (-sizeScaled.y / 2) * angleSin;
-  rect->v0.y = centerPos.y + (-sizeScaled.y / 2) * angleCos +
-               (-sizeScaled.x / 2) * angleSin;
+  rect->v0.x = sprite.position.x + pivot.x * angleCos - pivot.y * angleSin;
+  rect->v0.y = sprite.position.y + pivot.y * angleCos + pivot.x * angleSin;
   rect->v0.z = (u32)-1;
 
+  rect->v0.x -= pivot.x;
+  rect->v0.y -= pivot.y;
+
   // Bottom Left
-  rect->v1.x = centerPos.x + (-sizeScaled.x / 2) * angleCos -
-               sizeScaled.y / 2 * angleSin;
-  rect->v1.y = centerPos.y + sizeScaled.y / 2 * angleCos +
-               (-sizeScaled.x / 2) * angleSin;
+  rect->v1.x = sprite.position.x + pivot.x * angleCos -
+               (sizeScaled.y + pivot.y) * angleSin;
+  rect->v1.y = sprite.position.y + (sizeScaled.y + pivot.y) * angleCos +
+               pivot.x * angleSin;
   rect->v1.z = (u32)-1;
 
+  rect->v1.x -= pivot.x;
+  rect->v1.y -= pivot.y;
+
   // Top Right
-  rect2.v0.x = centerPos.x + sizeScaled.x / 2 * angleCos -
-               (-sizeScaled.y / 2) * angleSin;
-  rect2.v0.y = centerPos.y + (-sizeScaled.y / 2) * angleCos +
-               sizeScaled.x / 2 * angleSin;
+  rect2.v0.x = sprite.position.x + (pivot.x + sizeScaled.x) * angleCos -
+               (pivot.y) * angleSin;
+  rect2.v0.y = sprite.position.y + pivot.y * angleCos +
+               (sizeScaled.x + pivot.x) * angleSin;
   rect2.v0.z = (u32)-1;
 
+  rect2.v0.x -= pivot.x;
+  rect2.v0.y -= pivot.y;
+
   // Bottom Right
-  rect2.v1.x =
-      centerPos.x + sizeScaled.x / 2 * angleCos - sizeScaled.y / 2 * angleSin;
-  rect2.v1.y =
-      centerPos.y + sizeScaled.y / 2 * angleCos + sizeScaled.x / 2 * angleSin;
+  rect2.v1.x = sprite.position.x + (sizeScaled.x + pivot.x) * angleCos -
+               (sizeScaled.y + pivot.y) * angleSin;
+  rect2.v1.y = sprite.position.y + (sizeScaled.y + pivot.y) * angleCos +
+               (sizeScaled.x + pivot.x) * angleSin;
   rect2.v1.z = (u32)-1;
+
+  rect2.v1.x -= pivot.x;
+  rect2.v1.y -= pivot.y;
 
   auto* packet = packets[context];
 
