@@ -303,6 +303,20 @@ void PngLoader::handle8bppPalletized(TextureBuilderData* result,
 
   for (int i = 0; i < numTrans; i++) clut[i].a = trans[i] >> 1;
 
+  int alpha = -1;
+  for (int i = 0; i < numTrans; i++) {
+    if (clut[i].a == 0) {
+      alpha = i;
+      break;
+    }
+  }
+
+  if (alpha == -1 && (result->width - originalWidth != 0 ||
+                      result->height - originalHeight != 0)) {
+    TYRA_WARN("Alpha doesn't found in palette, using first color");
+    alpha = 0;
+  }
+
   // rotate clut
   for (int i = 0; i < numPallete; i++) {
     if ((i & 0x18) == 8) {
@@ -318,13 +332,13 @@ void PngLoader::handle8bppPalletized(TextureBuilderData* result,
       memcpy(&pixel[k++], &rowPointers[i][1 * j], 1);
     }
     for (int j = 0; j < result->width - originalWidth; j++) {
-      memcpy(&pixel[k++], &rowPointers[0][0], 1);
+      memcpy(&pixel[k++], &alpha, 1);
     }
   }
 
   for (int j = 0; j < result->height - originalHeight; j++) {
     for (int j = 0; j < result->width; j++) {
-      memcpy(&pixel[k++], &rowPointers[0][0], 1);
+      memcpy(&pixel[k++], &alpha, 1);
     }
   }
 
