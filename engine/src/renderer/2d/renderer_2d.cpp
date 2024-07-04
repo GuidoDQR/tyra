@@ -31,7 +31,7 @@ void Renderer2D::render(const Sprite& sprite) {
   core->renderer2D.render(sprite, texBuffers, texture);
 }
 
-void Renderer2D::renderRotate(const Sprite& sprite, float angle) {
+void Renderer2D::renderRotate(const Sprite& sprite, const Vec2& angle) {
   auto* texture = core->texture.repository.getBySpriteId(sprite.id);
 
   TYRA_ASSERT(

@@ -34,7 +34,7 @@ class RendererCore2D {
 
   void renderRotate(const Sprite& sprite,
                     const RendererCoreTextureBuffers& texBuffers,
-                    Texture* texture, float angle);
+                    Texture* texture, const Vec2& angle);
 
   void setTextureMappingType(
       const PipelineTextureMappingType textureMappingType);

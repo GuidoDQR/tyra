@@ -190,13 +190,13 @@ qword_t* tyra_draw_sprite_rotate(qword_t* q, int context, texrect_t* rect,
 
 void RendererCore2D::renderRotate(const Sprite& sprite,
                                   const RendererCoreTextureBuffers& texBuffers,
-                                  Texture* texture, float angle) {
+                                  Texture* texture, const Vec2& angle) {
   auto* rect = rects[context];
   texrect_t rect2;
   float sizeX, sizeY;
 
-  float angleCos = Math::cos(angle * (Math::PI / 180.0f));
-  float angleSin = Math::sin(angle * (Math::PI / 180.0f));
+  float angleCos = Math::cos(angle.x * (Math::PI / 180.0f));
+  float angleSin = Math::sin(angle.y * (Math::PI / 180.0f));
 
   if (sprite.mode == MODE_REPEAT) {
     sizeX = sprite.size.x;
