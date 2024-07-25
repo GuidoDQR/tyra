@@ -85,12 +85,49 @@ TextureBuilderData* JpgLoader::load(const char* fullPath) {
   result->name = filename;
   result->gsComponents = TEXTURE_COMPONENTS_RGB;
 
+  int originalWidth = result->width;
+  int originalHeight = result->height;
+
+  if (result->width == 8) {
+    result->width = 8;
+  } else if (result->width <= 16) {
+    result->width = 16;
+  } else if (result->width <= 32) {
+    result->width = 32;
+  } else if (result->width <= 64) {
+    result->width = 64;
+  } else if (result->width <= 128) {
+    result->width = 128;
+  } else if (result->width <= 256) {
+    result->width = 256;
+  } else if (result->width <= 512) {
+    result->width = 512;
+  }
+
+  if (result->height == 8) {
+    result->height = 8;
+  } else if (result->height <= 16) {
+    result->height = 16;
+  } else if (result->height <= 32) {
+    result->height = 32;
+  } else if (result->height <= 64) {
+    result->height = 64;
+  } else if (result->height <= 128) {
+    result->height = 128;
+  } else if (result->height <= 256) {
+    result->height = 256;
+  } else if (result->height <= 512) {
+    result->height = 512;
+  }
+
   int textureSize;
 
   if (cinfo.out_color_components == JCS_YCbCr) {
     result->bpp = bpp24;
     textureSize = getTextureSize(result->width, result->height, bpp24);
+
     result->data = static_cast<unsigned char*>(memalign(128, textureSize));
+    memset(result->data, 0, textureSize);
 
     unsigned int row_stride = textureSize / result->height;
     unsigned char* row_pointer = result->data;
@@ -104,6 +141,7 @@ TextureBuilderData* JpgLoader::load(const char* fullPath) {
     textureSize = getTextureSize(result->width, result->height, bpp32);
 
     result->data = static_cast<unsigned char*>(memalign(128, textureSize));
+    memset(result->data, 0, textureSize);
 
     unsigned int row_stride = textureSize / result->height;
     unsigned char* row_pointer = result->data;
@@ -120,6 +158,7 @@ TextureBuilderData* JpgLoader::load(const char* fullPath) {
     textureSize = getTextureSize(result->width, result->height, bpp8);
 
     result->data = static_cast<unsigned char*>(memalign(128, textureSize));
+    memset(result->data, 0, textureSize);
 
     unsigned int row_stride = textureSize / result->height;
     unsigned char* row_pointer = result->data;
