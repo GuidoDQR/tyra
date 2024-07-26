@@ -85,9 +85,6 @@ TextureBuilderData* JpgLoader::load(const char* fullPath) {
   result->name = filename;
   result->gsComponents = TEXTURE_COMPONENTS_RGB;
 
-  int originalWidth = result->width;
-  int originalHeight = result->height;
-
   if (result->width == 8) {
     result->width = 8;
   } else if (result->width <= 16) {
