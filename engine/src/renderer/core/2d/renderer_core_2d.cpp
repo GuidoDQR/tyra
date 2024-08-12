@@ -9,6 +9,7 @@
 */
 
 #include "renderer/core/2d/renderer_core_2d.hpp"
+#include "math/math.hpp"
 #include <dma.h>
 #include <draw.h>
 
@@ -20,6 +21,7 @@ RendererCore2D::RendererCore2D() {
   packets[1] = packet2_create(16, P2_TYPE_NORMAL, P2_MODE_NORMAL, 0);
   rects[0] = new texrect_t;
   rects[1] = new texrect_t;
+  ztest.enable = DRAW_ENABLE;
 
   setPrim();
   setLod();
@@ -131,6 +133,177 @@ void RendererCore2D::render(const Sprite& sprite,
   dma_channel_send_packet2(packet, DMA_CHANNEL_GIF, true);
 
   context = !context;
+}
+
+#define START_OFFSET 2047.5625f
+
+#define END_OFFSET 2048.5625f
+
+#define TYRA_DRAW_SPRITE_TEX__NREG 10
+#define TYRA_DRAW_SPRITE_TEX_REGLIST                        \
+  ((u64)GIF_REG_PRIM) << 0 | ((u64)GIF_REG_RGBAQ) << 4 |    \
+      ((u64)GIF_REG_UV) << 8 | ((u64)GIF_REG_XYZ2) << 12 |  \
+      ((u64)GIF_REG_UV) << 16 | ((u64)GIF_REG_XYZ2) << 20 | \
+      ((u64)GIF_REG_UV) << 24 | ((u64)GIF_REG_XYZ2) << 28 | \
+      ((u64)GIF_REG_UV) << 32 | ((u64)GIF_REG_XYZ2) << 36
+
+qword_t* tyra_draw_sprite_rotate(qword_t* q, int context, texrect_t* rect,
+                                 texrect_t* rect2) {
+  // Start primitive
+  PACK_GIFTAG(
+      q, GIF_SET_TAG(1, 0, 0, 0, GIF_FLG_REGLIST, TYRA_DRAW_SPRITE_TEX__NREG),
+      TYRA_DRAW_SPRITE_TEX_REGLIST);
+  q++;
+
+  // Fill vertex information
+  q->dw[0] = GIF_SET_PRIM(PRIM_TRIANGLE_STRIP, 0, DRAW_ENABLE, 0, 1, 0,
+                          PRIM_MAP_UV, context, 0);
+  q->dw[1] = rect->color.rgbaq;
+  q++;
+
+  // vertex 1
+  q->dw[0] = GIF_SET_UV(ftoi4(rect->t0.u), ftoi4(rect->t0.v));
+  q->dw[1] = GIF_SET_XYZ(ftoi4(rect->v0.x + START_OFFSET),
+                         ftoi4(rect->v0.y + START_OFFSET), rect->v0.z);
+  q++;
+
+  // vertex 2
+  q->dw[0] = GIF_SET_UV(ftoi4(rect->t1.u), ftoi4(rect->t1.v));
+  q->dw[1] = GIF_SET_XYZ(ftoi4(rect->v1.x + START_OFFSET),
+                         ftoi4(rect->v1.y + END_OFFSET), rect->v0.z);
+  q++;
+
+  // vertex 3
+  q->dw[0] = GIF_SET_UV(ftoi4(rect2->t0.u), ftoi4(rect2->t0.v));
+  q->dw[1] = GIF_SET_XYZ(ftoi4(rect2->v0.x + END_OFFSET),
+                         ftoi4(rect2->v0.y + START_OFFSET), rect2->v0.z);
+  q++;
+
+  // vertex 4
+  q->dw[0] = GIF_SET_UV(ftoi4(rect2->t1.u), ftoi4(rect2->t1.v));
+  q->dw[1] = GIF_SET_XYZ(ftoi4(rect2->v1.x + END_OFFSET),
+                         ftoi4(rect2->v1.y + END_OFFSET), rect2->v1.z);
+  q++;
+
+  return q;
+}
+
+void RendererCore2D::renderRotate(const Sprite& sprite,
+                                  const RendererCoreTextureBuffers& texBuffers,
+                                  Texture* texture, const Vec2& angle) {
+  auto* rect = rects[context];
+  texrect_t rect2;
+  float sizeX, sizeY;
+
+  float angleCos = Math::cos(angle.x * (Math::PI / 180.0f));
+  float angleSin = Math::sin(angle.y * (Math::PI / 180.0f));
+
+  if (sprite.mode == MODE_REPEAT) {
+    sizeX = sprite.size.x;
+    sizeY = sprite.size.y;
+  } else {
+    sizeX = static_cast<float>(texture->getWidth());
+    sizeY = static_cast<float>(texture->getHeight());
+  }
+
+  float texS, texT;
+  float texMax = texT = texS = sizeX > sizeY ? sizeX : sizeY;
+
+  if (sizeX > sizeY)
+    texT = texMax / (sizeX / sizeY);
+  else if (sizeY > sizeX)
+    texS = texMax / (sizeY / sizeX);
+
+  rect->t0.s =
+      sprite.flipHorizontal ? (texS + sprite.offset.x) : sprite.offset.x;
+  rect->t0.t = sprite.flipVertical ? (texT + sprite.offset.y) : sprite.offset.y;
+  rect->t1.s =
+      sprite.flipHorizontal ? (texS + sprite.offset.x) : sprite.offset.x;
+  rect->t1.t = sprite.flipVertical ? sprite.offset.y : (texT + sprite.offset.y);
+
+  rect2.t0.s =
+      sprite.flipHorizontal ? sprite.offset.x : (texS + sprite.offset.x);
+  rect2.t0.t = sprite.flipVertical ? (texT + sprite.offset.y) : sprite.offset.y;
+  rect2.t1.s =
+      sprite.flipHorizontal ? sprite.offset.x : (texS + sprite.offset.x);
+  rect2.t1.t = sprite.flipVertical ? sprite.offset.y : (texT + sprite.offset.y);
+
+  rect->color.r = sprite.color.r;
+  rect->color.g = sprite.color.g;
+  rect->color.b = sprite.color.b;
+  rect->color.a = sprite.color.a;
+  rect->color.q = 0;
+
+  Vec2 sizeScaled =
+      Vec2(sprite.size.x * sprite.scale, sprite.size.y * sprite.scale);
+
+  // center of sprite
+  Vec2 pivot = Vec2(0.0f, 0.0f);
+
+  // Top Left
+  rect->v0.x = sprite.position.x + pivot.x * angleCos - pivot.y * angleSin;
+  rect->v0.y = sprite.position.y + pivot.y * angleCos + pivot.x * angleSin;
+  rect->v0.z = (u32)-1;
+
+  // Bottom Left
+  rect->v1.x = sprite.position.x + pivot.x * angleCos -
+               (sizeScaled.y + pivot.y) * angleSin;
+  rect->v1.y = sprite.position.y + (sizeScaled.y + pivot.y) * angleCos +
+               pivot.x * angleSin;
+  rect->v1.z = (u32)-1;
+
+  // Top Right
+  rect2.v0.x = sprite.position.x + (pivot.x + sizeScaled.x) * angleCos -
+               (pivot.y) * angleSin;
+  rect2.v0.y = sprite.position.y + pivot.y * angleCos +
+               (sizeScaled.x + pivot.x) * angleSin;
+  rect2.v0.z = (u32)-1;
+
+  // Bottom Right
+  rect2.v1.x = sprite.position.x + (sizeScaled.x + pivot.x) * angleCos -
+               (sizeScaled.y + pivot.y) * angleSin;
+  rect2.v1.y = sprite.position.y + (sizeScaled.y + pivot.y) * angleCos +
+               (sizeScaled.x + pivot.x) * angleSin;
+  rect2.v1.z = (u32)-1;
+
+  auto* packet = packets[context];
+
+  packet2_reset(packet, false);
+  packet2_update(packet, draw_primitive_xyoffset(packet->base, 0, SCREEN_CENTER,
+                                                 SCREEN_CENTER));
+
+  packet2_utils_gif_add_set(packet, 1);
+  packet2_utils_gs_add_lod(packet, &lod);
+  packet2_utils_gif_add_set(packet, 1);
+  packet2_utils_gs_add_texbuff_clut(packet, texBuffers.core, clutBuffer);
+  draw_enable_blending();
+  packet2_update(packet,
+                 tyra_draw_sprite_rotate(packet->next, 0, rect, &rect2));
+
+  packet2_update(packet, draw_primitive_xyoffset(
+                             packet->next, 0,
+                             SCREEN_CENTER - (settings->getWidth() / 2.0F),
+                             SCREEN_CENTER - (settings->getHeight() / 2.0F)));
+  draw_disable_blending();
+  packet2_update(packet, draw_finish(packet->next));
+
+  dma_channel_wait(DMA_CHANNEL_GIF, 0);
+  dma_channel_send_packet2(packet, DMA_CHANNEL_GIF, true);
+
+  context = !context;
+}
+
+void RendererCore2D::pixelTest(atest_t* alpha, dtest_t* destAlpha,
+                               unsigned char zMethod) {
+  auto* packet = packets[context];
+  packet2_reset(packet, false);
+
+  ztest.method = zMethod;
+  packet2_update(packet,
+                 draw_pixel_test(packet->next, 0, alpha, destAlpha, &ztest));
+
+  dma_channel_wait(DMA_CHANNEL_GIF, 0);
+  dma_channel_send_packet2(packet, DMA_CHANNEL_GIF, true);
 }
 
 void RendererCore2D::setTextureMappingType(
