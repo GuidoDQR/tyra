@@ -3,10 +3,11 @@
 #   |     \/   ____| |___|
 #   |     |   |   \  |   |
 #-----------------------------------------------------------------------
-# Copyright 2022, tyra - https://github.com/h4570/tyra
+# Copyright 2024, tyra - https://github.com/h4570/tyra
 # Licensed under Apache License 2.0
 # Sandro Sobczyński <sandro.sobczynski@gmail.com>
 # Guido Diego Quispe Robles
+# André Guilherme <andregui17@outlook.com>
 */
 #pragma once
 
@@ -14,6 +15,8 @@
 #include "renderer/core/texture/models/texture.hpp"
 
 #ifdef INTELLISENSE
+typedef void* jpeg_error_mgr;
+typedef void* jpeg_decompress_struct;
 #else
 #include <jpeglib.h>
 #endif

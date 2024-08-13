@@ -3,21 +3,22 @@
 #   |     \/   ____| |___|
 #   |     |   |   \  |   |
 #-----------------------------------------------------------------------
-# Copyright 2022, tyra - https://github.com/h4570/tyra
+# Copyright 2024, tyra - https://github.com/h4570/tyra
 # Licensed under Apache License 2.0
 # Sandro Sobczyński <sandro.sobczynski@gmail.com>
 # Guido Diego Quispe Robles
+# André Guilherme <andregui17@outlook.com>
 */
 
 #include "debug/debug.hpp"
-#include <stdio.h>
+#include <cstdio>
 #include <malloc.h>
 #include <jpeglib.h>
 #include <cstring>
 #include <draw_buffers.h>
 #include "loaders/texture/jpg_loader.hpp"
 #include "file/file_utils.hpp"
-#include <setjmp.h>
+#include <csetjmp>
 #include <cmath>
 
 namespace Tyra {
