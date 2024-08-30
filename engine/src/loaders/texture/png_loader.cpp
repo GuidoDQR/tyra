@@ -74,13 +74,14 @@ TextureBuilderData* PngLoader::load(const char* fullPath) {
   result->name = filename;
 
   auto updatedColorType = png_get_color_type(pngPtr, infoPtr);
-
   if (updatedColorType == PNG_COLOR_TYPE_PALETTE) {
     handlePalletized(result, pngPtr, infoPtr, rowPointers, bitDepth);
   } else if (updatedColorType == PNG_COLOR_TYPE_RGB_ALPHA) {
     handle32bpp(result, pngPtr, infoPtr, rowPointers);
   } else if (updatedColorType == PNG_COLOR_TYPE_RGB) {
     handle24bpp(result, pngPtr, infoPtr, rowPointers);
+  } else if (updatedColorType == PNG_COLOR_TYPE_GRAY_ALPHA) {
+    handleGrayAlpha(result, pngPtr, infoPtr, rowPointers);
   } else
     TYRA_TRAP("This texture depth is not supported!");
 
@@ -198,6 +199,89 @@ void PngLoader::handle24bpp(TextureBuilderData* result, png_structp pngPtr,
       pixels[k].r = rowPointers[i][4 * j];
       pixels[k].g = rowPointers[i][4 * j + 1];
       pixels[k++].b = rowPointers[i][4 * j + 2];
+    }
+  }
+
+  for (int row = 0; row < result->height; row++) free(rowPointers[row]);
+
+  free(rowPointers);
+}
+
+void PngLoader::handleGrayAlpha(TextureBuilderData* result, png_structp pngPtr,
+                                png_infop infoPtr, png_bytep* rowPointers) {
+  int rowBytes = png_get_rowbytes(pngPtr, infoPtr);
+
+  result->gsComponents = TEXTURE_COMPONENTS_RGBA;
+  result->bpp = bpp32;
+
+  int originalWidth = result->width;
+  int originalHeight = result->height;
+
+  if (result->width == 8) {
+    result->width = 8;
+  } else if (result->width <= 16) {
+    result->width = 16;
+  } else if (result->width <= 32) {
+    result->width = 32;
+  } else if (result->width <= 64) {
+    result->width = 64;
+  } else if (result->width <= 128) {
+    result->width = 128;
+  } else if (result->width <= 256) {
+    result->width = 256;
+  } else if (result->width <= 512) {
+    result->width = 512;
+  }
+
+  if (result->height == 8) {
+    result->height = 8;
+  } else if (result->height <= 16) {
+    result->height = 16;
+  } else if (result->height <= 32) {
+    result->height = 32;
+  } else if (result->height <= 64) {
+    result->height = 64;
+  } else if (result->height <= 128) {
+    result->height = 128;
+  } else if (result->height <= 256) {
+    result->height = 256;
+  } else if (result->height <= 512) {
+    result->height = 512;
+  }
+
+  result->data = static_cast<unsigned char*>(memalign(
+      128, getTextureSize(result->width, result->height, result->bpp)));
+
+  rowPointers =
+      static_cast<png_bytep*>(calloc(result->height, sizeof(png_bytep)));
+
+  for (int row = 0; row < result->height; row++)
+    rowPointers[row] = static_cast<png_bytep>(malloc(rowBytes));
+
+  png_read_image(pngPtr, rowPointers);
+
+  struct PngPixel4* pixels = (struct PngPixel4*)result->data;
+
+  int k = 0;
+  for (int i = 0; i < originalHeight; i++) {
+    for (int j = 0; j < originalWidth; j++) {
+      pixels[k].r = rowPointers[i][2 * j];
+      pixels[k].g = pixels[k].r;
+      pixels[k].b = pixels[k].r;
+      pixels[k].a = ((int)rowPointers[i][2 * j + 1] * 128 / 255);
+      k++;
+    }
+    for (int j = 0; j < result->width - originalWidth; j++) {
+      pixels[k].r = 0;
+      pixels[k].g = 0;
+      pixels[k].b = 0;
+      pixels[k++].a = 0;
+    }
+  }
+
+  for (int i = 0; i < result->height - originalHeight; i++) {
+    for (int j = 0; j < result->width; j++) {
+      pixels[k++].a = 0;
     }
   }
 
