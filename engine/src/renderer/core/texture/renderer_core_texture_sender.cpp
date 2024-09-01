@@ -57,10 +57,20 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureCore(
     const Texture* t_texture) {
   auto* result = new texbuffer_t;
   const auto* core = t_texture->core;
+  
+  switch (core->psm) {
+    case GS_PSM_8:
+    case GS_PSM_4:
+    case GS_PSM_8H:
+    case GS_PSM_4HL:
+    case GS_PSM_4HH:
+      result->width = -128 & (core->width + 127);
+      break;
+    default:
+      result->width = -64 & (core->width + 63);
+      break;
+  }
 
-  int coreWidth = core->width <= 64 ? 64 : core->width;
-
-  result->width = coreWidth;
   result->psm = core->psm;
   result->info.components = core->components;
 
