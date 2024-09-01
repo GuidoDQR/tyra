@@ -57,7 +57,7 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureCore(
     const Texture* t_texture) {
   auto* result = new texbuffer_t;
   const auto* core = t_texture->core;
-  
+
   switch (core->psm) {
     case GS_PSM_8:
     case GS_PSM_4:
