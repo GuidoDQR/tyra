@@ -195,10 +195,10 @@ void RendererCore2D::renderRotate(const Sprite& sprite,
   texrect_t rect2;
   float sizeX, sizeY;
 
-  float angleCos = Math::cos(angle.x * (Math::PI / 180.0f));
-  float angleSin = Math::sin(angle.x * (Math::PI / 180.0f));
-  float angleCos2 = Math::cos(angle.y * (Math::PI / 180.0f));
-  float angleSin2 = Math::sin(angle.y * (Math::PI / 180.0f));
+  float angleCos = Math::cos(angle.x * Math::ANG2RAD);
+  float angleSin = Math::sin(angle.x * Math::ANG2RAD);
+  float angleCos2 = Math::cos(angle.y * Math::ANG2RAD);
+  float angleSin2 = Math::sin(angle.y * Math::ANG2RAD);
 
   if (sprite.mode == MODE_REPEAT) {
     sizeX = sprite.size.x;
