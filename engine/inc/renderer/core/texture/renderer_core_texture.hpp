@@ -24,8 +24,8 @@ class RendererCoreTexture {
   RendererCoreTexture();
   ~RendererCoreTexture();
 
-  clutbuffer_t clut;
-  TextureRepository repository;
+  clutbuffer_t& getClutBuffer();
+  TextureRepository& getTextureRepository();
 
   RendererCoreTextureBuffers useTexture(const Texture* t_tex);
 

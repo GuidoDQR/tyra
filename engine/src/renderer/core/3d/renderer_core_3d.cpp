@@ -12,11 +12,20 @@
 
 namespace Tyra {
 
+Renderer3DFrustumPlanes frustumPlanes;
+M4x4 view, projection, viewProj;
+
 RendererCore3D::RendererCore3D() {
   fov = 60.0F;
   is3DSupportEnabled = false;
 }
 RendererCore3D::~RendererCore3D() {}
+
+Renderer3DFrustumPlanes RendererCore3D::getFrustumPlanes() {
+  return frustumPlanes;
+}
+
+const M4x4& RendererCore3D::getProjection() { return projection; }
 
 void RendererCore3D::update() { is3DSupportEnabled = false; }
 

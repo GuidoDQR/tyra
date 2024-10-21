@@ -13,11 +13,15 @@
 
 namespace Tyra {
 
+Renderer3DUtility utility;
+
 Renderer3D::Renderer3D() { currentPipeline = nullptr; }
 
 Renderer3D::~Renderer3D() {}
 
 void Renderer3D::init(RendererCore* core) { utility.init(core); }
+
+Renderer3DUtility& Renderer3D::getUtility() { return utility; };
 
 void Renderer3D::onFrameEnd() {
   if (currentPipeline != nullptr) {
