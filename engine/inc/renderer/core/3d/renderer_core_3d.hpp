@@ -26,7 +26,7 @@ class RendererCore3D {
   ~RendererCore3D();
 
   /** Current camera frustum planes. */
-  Renderer3DFrustumPlanes getFrustumPlanes();
+  Renderer3DFrustumPlanes frustumPlanes;
 
   /** Called by renderer. */
   void init(RendererSettings* settings, Path1* t_path1);
@@ -49,7 +49,7 @@ class RendererCore3D {
   void update(const CameraInfo3D& cameraInfo);
 
   /** Get projection (screen) matrix */
-  const M4x4& getProjection();
+  const M4x4& getProjection() { return projection; }
 
   /**
    * Get view (camera) matrix
@@ -85,6 +85,7 @@ class RendererCore3D {
   void setVU1DoubleBuffers(const u16& startingAddress, const u16& bufferSize);
 
  private:
+  M4x4 view, projection, viewProj;
   float fov;
   bool is3DSupportEnabled;
 

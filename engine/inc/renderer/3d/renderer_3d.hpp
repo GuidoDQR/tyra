@@ -21,7 +21,7 @@ class Renderer3D {
   Renderer3D();
   ~Renderer3D();
 
-  Renderer3DUtility& getUtility();
+  Renderer3DUtility utility;
 
   /** Deinitialize previous pipeline and initialize new pipeline */
   void usePipeline(Renderer3DPipeline* pipeline);

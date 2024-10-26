@@ -26,20 +26,20 @@ class RendererCore {
   RendererCore();
   ~RendererCore();
 
-  // /** Responsible for initializing GS. */
-  RendererCoreGS& getCoreGS();
+  /** Responsible for initializing GS. */
+  RendererCoreGS gs;
 
-  // /** All logic responsible for 3D drawing. */
-  RendererCore3D& getCore3D();
+  /** All logic responsible for 3D drawing. */
+  RendererCore3D renderer3D;
 
-  // /** All logic responsible for 2D drawing. */
-  RendererCore2D& getCore2D();
+  /** All logic responsible for 2D drawing. */
+  RendererCore2D renderer2D;
 
-  // /** Texture transferring. */
-  RendererCoreTexture& getCoreTexture();
+  /** Texture transferring. */
+  RendererCoreTexture texture;
 
-  // /** EE <-> VU1 synchronization */
-  RendererCoreSync& getCoreSync();
+  /** EE <-> VU1 synchronization */
+  RendererCoreSync sync;
 
   /** Called by renderer */
   void init();
@@ -59,14 +59,18 @@ class RendererCore {
   void setFrameLimit(const bool& onoff) { isFrameLimitOn = onoff; }
 
   /** Get screen settings */
-  const RendererSettings& getSettings();
+  const RendererSettings& getSettings() const { return settings; }
 
-  Path1* getPath1();
+  Path1* getPath1() { return &path1; }
 
-  Path3* getPath3();
+  Path3* getPath3() { return &path3; }
 
  private:
   bool isFrameLimitOn;
+  Color bgColor;
+  RendererSettings settings;
+  Path3 path3;
+  Path1 path1;
 };
 
 }  // namespace Tyra

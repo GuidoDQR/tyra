@@ -16,21 +16,12 @@ RendererCoreTexture::RendererCoreTexture() {}
 
 RendererCoreTexture::~RendererCoreTexture() {}
 
-clutbuffer_t clut;
-TextureRepository repository;
-
 void RendererCoreTexture::init(RendererCoreGS* t_gs, Path3* t_path3) {
   gs = t_gs;
   sender.init(t_path3, t_gs);
   repository.init(&currentAllocations);
   path3 = t_path3;
   initClut();
-}
-
-clutbuffer_t& RendererCoreTexture::getClutBuffer() { return clut; }
-
-TextureRepository& RendererCoreTexture::getTextureRepository() {
-  return repository;
 }
 
 void RendererCoreTexture::updateClutBuffer(texbuffer_t* clutBuffer) {
