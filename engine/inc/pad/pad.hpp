@@ -25,6 +25,8 @@ struct PadJoy {
   u8 h, v, isCentered, isMoved;
 };
 
+typedef char PadBuffer[256] alignas(sizeof(char) * 64);
+
 /** Class responsible for player pad */
 class Pad {
  public:
@@ -40,12 +42,13 @@ class Pad {
   inline const PadJoy& getRightJoyPad() const { return rightJoyPad; }
 
  private:
-  char padBuf[256] alignas(sizeof(char) * 256);
+  PadBuffer* padBuf;
+  char* bufferData;
   char actAlign[6];
-  int actuators, ret, port, slot;
-  padButtonStatus buttons;
-  u32 padData, oldPad, newPad;
-  PadButtons pressed, clicked;
+  int actuators, ret, port, slot; // 4 * 4 = 16
+  padButtonStatus buttons;     // 32
+  u32 padData, oldPad, newPad; //  4 * 3 = 12
+  PadButtons pressed, clicked; // 16 * 2 = 32
   PadJoy leftJoyPad, rightJoyPad;
 
   void reset();

@@ -14,6 +14,8 @@
 #include <sifrpc.h>
 #include <stdio.h>
 #include <string.h>
+#include <vector>
+
 #include "debug/debug.hpp"
 #include "pad/pad.hpp"
 
@@ -34,7 +36,9 @@ void Pad::init() {
   this->port = 0;  // 0 -> Connector 1, 1 -> Connector 2
   this->slot = 0;  // Always zero if not using multitap
 
-  this->ret = padPortOpen(this->port, this->slot, padBuf);
+  this->bufferData = new char alignas(sizeof(char) * 64) [256];
+
+  this->ret = padPortOpen(this->port, this->slot, this->bufferData);
   TYRA_ASSERT(this->ret != 0,
               "padPortOpen failed! padPortOpen returned: ", this->ret);
   TYRA_ASSERT(this->initPad(), "initPad failed!");
@@ -137,7 +141,7 @@ void Pad::update() {
     this->newPad = this->padData & ~this->oldPad;
     this->oldPad = this->padData;
     this->reset();
-
+  // sizeof(PadButtons);
     // Digital buttons
     this->rightJoyPad.h = this->buttons.rjoy_h;
     this->rightJoyPad.v = this->buttons.rjoy_v;

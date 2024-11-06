@@ -36,10 +36,10 @@ class Engine {
   Engine(const EngineOptions& options);
   ~Engine();
 
-  Renderer renderer;
-  Pad pad;
-  Audio audio;
-  Info info;
+  // Renderer renderer;
+  // Pad pad;
+  // Audio audio;
+  // Info info;
 
   void run(Game* t_game);
 
@@ -52,5 +52,13 @@ class Engine {
   void realLoop();
   void initAll(const bool& loadUsbDriver);
 };
+
+void InitEngine(const EngineOptions& options);
+
+void BeginDrawing(void);
+void beginFrame();
+void endFrame();
+
+void setClearScreenColor(const Color& color);
 
 }  // namespace Tyra
