@@ -3,7 +3,7 @@
 #   |     \/   ____| |___|
 #   |     |   |   \  |   |
 #-----------------------------------------------------------------------
-# Copyright 2022, tyra - https://github.com/h4570/tyra
+# Copyright 2024, tyra - https://github.com/h4570/tyra
 # Licensed under Apache License 2.0
 # Guido Diego Quispe Robles
 */
@@ -15,7 +15,7 @@
  * In this tutorial we will learn how to:
  * - Load and unload fonts
  * - Load an individual character
- * - How works the limit textures
+ * - How works the font texture
  */
 
 int main() {

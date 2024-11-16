@@ -3,7 +3,7 @@
 #   |     \/   ____| |___|
 #   |     |   |   \  |   |
 #-----------------------------------------------------------------------
-# Copyright 2022-2023, tyra - https://github.com/h4570/tyra
+# Copyright 2024, tyra - https://github.com/h4570/tyra
 # Licensed under Apache License 2.0
 # Guido Diego Quispe Robles
 */
@@ -17,8 +17,7 @@ Tutorial10::Tutorial10(Engine* t_engine)
     : padTimer(0), engine(t_engine), pad(&t_engine->pad) {}
 
 Tutorial10::~Tutorial10() {
-  for (int i = 0; i < 4; i++)
-    engine->renderer.getTextureRepository().freeBySprite(sprite[i]);
+  engine->font.unloadFontDataVRAM(&myFont);
 }
 
 void Tutorial10::init() {
@@ -44,7 +43,7 @@ void Tutorial10::init() {
   /** Texture contains png image. */
   loadTexture();
 
-  engine->font.loadFont(&myFont, FileUtils::fromCwd("Roboto-Black.ttf"));
+  engine->font.loadFont(&myFont, 32, FileUtils::fromCwd("Roboto-Black.ttf").c_str());
 
   white = Color(255.0F, 255.0F, 255.0F, 128.0F);
 
@@ -97,11 +96,11 @@ void Tutorial10::loop() {
            (512 / 2) - 150, 90, 16, white);
   font.drawText(&myFont, "sprite 32x32\n   scaled x3", sprite[normal].position.x,
            sprite[normal].position.y - 40, 16, white);
-  font.drawText(&myFont, "sprite 32x32\nscaled x3 with\n  \t\tflip",
+  font.drawText(&myFont, "sprite 32x32\nscaled x3 with\n  \t\t\t flip",
            sprite[flip].position.x, sprite[flip].position.y - 40, 16, white);
-  font.drawText(&myFont, "sprite 96x96\n  \t\twith\nrepeat mode",
+  font.drawText(&myFont, "sprite 96x96\n  \t\t  with\nrepeat mode",
            sprite[scale].position.x, sprite[scale].position.y - 40, 16, white);
-  font.drawText(&myFont, "sprite 96x96\n  \t\twith\nstretch mode",
+  font.drawText(&myFont, "sprite 96x96\n  \t\t  with\nstretch mode",
            sprite[stretch].position.x, sprite[stretch].position.y - 40, 16,
            white);
 
@@ -111,10 +110,10 @@ void Tutorial10::loop() {
     strFilter = "Filter: Nearest";
   }
 
-  font.drawText(&myFont, strFilter, posX1, posY1, 16, white);
+  font.drawText(&myFont, strFilter.c_str(), posX1, posY1, 16, white);
   font.drawText(&myFont, "Filter: Linear", posX2, posY2, 16, white);
-  font.drawText(&myFont, strFilter, posX3, posY3, 16, white);
-  font.drawText(&myFont, strFilter, posX4, posY4, 16, white);
+  font.drawText(&myFont, strFilter.c_str(), posX3, posY3, 16, white);
+  font.drawText(&myFont, strFilter.c_str(), posX4, posY4, 16, white);
 
   if (offsetIsNegative == true) {
     font.drawText(&myFont,
