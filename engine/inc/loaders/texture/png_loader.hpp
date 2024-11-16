@@ -50,6 +50,9 @@ class PngLoader : public TextureLoader {
   void handle24bpp(TextureBuilderData* result, png_structp pngPtr,
                    png_infop infoPtr, png_bytep* rowPointers);
 
+  void handleGrayAlpha(TextureBuilderData* result, png_structp pngPtr,
+                       png_infop infoPtr, png_bytep* rowPointers);
+
   void handlePalletized(TextureBuilderData* result, png_structp pngPtr,
                         png_infop infoPtr, png_bytep* rowPointers,
                         const int& bitDepth);

@@ -18,6 +18,7 @@
 #include "renderer/renderer_settings.hpp"
 #include <packet2_utils.h>
 #include <draw2d.h>
+#include <draw_tests.h>
 
 namespace Tyra {
 
@@ -31,8 +32,22 @@ class RendererCore2D {
   void render(const Sprite& sprite,
               const RendererCoreTextureBuffers& texBuffers, Texture* texture);
 
+  void renderRotate(const Sprite& sprite,
+                    const RendererCoreTextureBuffers& texBuffers,
+                    Texture* texture, const Vec2& angle);
+
   void setTextureMappingType(
       const PipelineTextureMappingType textureMappingType);
+
+  /**
+   * Controls which pixels to draw with the Alpha test, Destination Test and
+   * Z/Depth Test.
+   *
+   * Not change pixel Values and doesn't affect subsequent processes, like the
+   * Alpha-blending. The pixels are controlled when the pixel is written in the
+   * frame buffer and the Z buffer.
+   */
+  void pixelTest(atest_t* alpha, dtest_t* destAlpha, unsigned char zMethod);
 
  private:
   void setPrim();
@@ -40,6 +55,7 @@ class RendererCore2D {
 
   prim_t prim;
   lod_t lod;
+  ztest_t ztest;
 
   static const float GS_DRAW_AREA;
   static const float SCREEN_CENTER;

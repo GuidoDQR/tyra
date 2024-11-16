@@ -12,6 +12,7 @@
 
 #include "loaders/texture/base/texture_loader.hpp"
 #include "loaders/texture/png_loader.hpp"
+#include "loaders/texture/jpg_loader.hpp"
 #include <string>
 
 namespace Tyra {
@@ -30,5 +31,6 @@ class TextureLoaderSelector {
 
  private:
   PngLoader pngLoader;
+  JpgLoader jpgLoader;
 };
 }  // namespace Tyra

@@ -38,6 +38,8 @@ TextureLoader& TextureLoaderSelector::getLoaderByExtension(
                  extensionLower.begin(), ::tolower);
   if (extensionLower == "png") {
     return pngLoader;
+  } else if (extensionLower == "jpg") {
+    return jpgLoader;
   } else {
     TYRA_TRAP("There is no texture loader for extension: ", extensionLower);
     return pngLoader;

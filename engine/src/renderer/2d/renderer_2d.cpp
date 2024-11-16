@@ -31,4 +31,16 @@ void Renderer2D::render(const Sprite& sprite) {
   core->renderer2D.render(sprite, texBuffers, texture);
 }
 
+void Renderer2D::renderRotate(const Sprite& sprite, const Vec2& angle) {
+  auto* texture = core->texture.repository.getBySpriteId(sprite.id);
+
+  TYRA_ASSERT(
+      texture, "Texture for sprite with id: ", sprite.id,
+      "Was not found in texture repository! Did you forget to add texture?");
+
+  auto texBuffers = core->texture.useTexture(texture);
+  core->texture.updateClutBuffer(texBuffers.clut);
+  core->renderer2D.renderRotate(sprite, texBuffers, texture, angle);
+}
+
 }  // namespace Tyra

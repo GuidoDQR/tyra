@@ -16,7 +16,7 @@ OBJEXT      := o
 
 #Flags, Libraries and Includes
 CFLAGS      := 
-LIB         := 
+LIB         :=
 LIBDIRS     := 
 INC         := -I$(INCDIR)
 INCDEP      := -I$(INCDIR)
