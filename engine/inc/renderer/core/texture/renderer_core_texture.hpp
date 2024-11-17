@@ -29,6 +29,8 @@ class RendererCoreTexture {
 
   RendererCoreTextureBuffers useTexture(const Texture* t_tex);
 
+  RendererCoreTextureBuffers getAllocatedBuffersByTextureId(const u32& id);
+
   /**
    * Called by user after changing texture wrap settings
    * Updates texture packet without reallocate it
@@ -47,7 +49,6 @@ class RendererCoreTexture {
   void initClut();
   void registerAllocation(const RendererCoreTextureBuffers& t_buffers);
   void unregisterAllocation(const u32& textureId);
-  RendererCoreTextureBuffers getAllocatedBuffersByTextureId(const u32& id);
 
   RendererCoreGS* gs;
   RendererCoreTextureSender sender;
