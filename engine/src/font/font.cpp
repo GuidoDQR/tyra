@@ -308,8 +308,6 @@ void Font::createGlyphTexture(FontData* font, const int fontSize,
   }
   int pospixel;
 
-  // hay que hacer una version para los que tienen color RGBA
-  // esto solo funciona para sin color
   if (slot->bitmap.width + font->textureAtlas.x < 256 &&
       slot->bitmap.rows + font->textureAtlas.maxHeight < 256) {
     pospixel = (256 * colorSize * font->textureAtlas.y) + font->textureAtlas.x;
@@ -344,20 +342,15 @@ void Font::createGlyphTexture(FontData* font, const int fontSize,
 
   unsigned char* bitmapPixels = slot->bitmap.buffer;
 
-  // printf("1 textureID by texture: %d\n",texture->id);
   if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
-    // unsigned char* imageData = textureAtlas.texture->core->data;
     for (unsigned int i = 0; i < slot->bitmap.rows; i++) {
       for (unsigned int j = 0; j < slot->bitmap.width; j++) {
         texture->core->data[pospixel++] = *bitmapPixels++;
-
-        // printf("textureID by texture[%d][%d]: %d\n",i,j,texture->id);
       }
 
       pospixel += width - slot->bitmap.width;
     }
   } else if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
-    // esto es para el emoji
     struct PngPixel4* pixels =
         reinterpret_cast<PngPixel4*>(texture->core->data);
     for (unsigned int i = 0; i < slot->bitmap.rows; i++) {
@@ -372,10 +365,10 @@ void Font::createGlyphTexture(FontData* font, const int fontSize,
     }
   }
 
-  // printf("2 textureID by texture: %d\n",texture->id);
-  TyraFont::rendererTexture->updateTextureInfo(texture);
-
-  // TYRA_LOG("sali de create");
+  if (TyraFont::rendererTexture->getAllocatedBuffersByTextureId(texture->id)
+          .id != 0) {
+    TyraFont::rendererTexture->updateTextureInfo(texture);
+  }
 }
 
 void Font::drawText(FontData* font, const char* text, float x, float y,
