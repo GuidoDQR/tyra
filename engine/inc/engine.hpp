@@ -44,7 +44,7 @@ class Engine {
   void run(Game* t_game);
 
  private:
-  IrxLoader irx;
+  // IrxLoader irx;
 
   Game* game;
   Banner banner;
@@ -52,12 +52,39 @@ class Engine {
   void realLoop();
   void initAll(const bool& loadUsbDriver);
 };
+class EngineCoreData {
+ public:
+  EngineCoreData()
+      : width(512.0F),
+        height(448.0F),
+        interlacedHeightF(height / 2),
+        near(0.1F),
+        far(51200.0F),
+        projectionScale(4096.0F),
+        aspectRatio(width / height),
+        interlacedHeightUI(static_cast<unsigned int>(interlacedHeightF)) {}
+
+  void print() const;
+  std::string getPrint() const;
+
+  float width;
+  float height;
+  float interlacedHeightF;
+  float near;
+  float far;
+  float projectionScale;
+  float aspectRatio;
+  unsigned int interlacedHeightUI;
+};
 
 void InitEngine(const EngineOptions& options);
 
 void BeginDrawing(void);
 void beginFrame();
 void endFrame();
+void render(const Sprite& sprite);
+EngineCoreData getSettings();
+TextureRepository& getTextureRepository();
 
 void setClearScreenColor(const Color& color);
 

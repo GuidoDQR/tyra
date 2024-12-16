@@ -9,10 +9,12 @@
 */
 
 #include "engine.hpp"
+#include "thread/threading.hpp"
 #include "renderer/core/paths/path1/path1.hpp"
 #include "info/version.hpp"
 #include <iostream>
 #include <cstring>
+#include <iomanip> 
 #include "info/banner_data.cpp"
 
 #include <dma.h>
@@ -27,32 +29,6 @@ namespace Tyra {
 
 static Color bgColor;
 static bool isFrameLimitOn;
-
-class EngineCoreData {
- public:
-  EngineCoreData()
-      : width(512.0F),
-        height(448.0F),
-        interlacedHeightF(height / 2),
-        near(0.1F),
-        far(51200.0F),
-        projectionScale(4096.0F),
-        aspectRatio(width / height),
-        interlacedHeightUI(static_cast<unsigned int>(interlacedHeightF)) {}
-  ~EngineCoreData();
-
-  void print() const;
-  std::string getPrint() const;
-
-  float width;
-  float height;
-  float interlacedHeightF;
-  float near;
-  float far;
-  float projectionScale;
-  float aspectRatio;
-  unsigned int interlacedHeightUI;
-};
 
 void EngineCoreData::print() const {
   auto text = getPrint();
@@ -74,6 +50,8 @@ std::string EngineCoreData::getPrint() const {
 }
 
 static EngineCoreData core;
+
+EngineCoreData getSettings(){ return core; }
 
 class EngineRendererCoreGS {
  public:
@@ -120,10 +98,10 @@ EngineRendererCoreGS::~EngineRendererCoreGS() {
 
 static EngineRendererCoreGS rendererGS;
 
-class Path3 {
+class path3Lib {
  public:
-  Path3();
-  ~Path3();
+  path3Lib();
+  ~path3Lib();
 
   void init();
 
@@ -138,7 +116,7 @@ class Path3 {
   packet2_t* texturePacket;
 };
 
-Path3::Path3() {
+path3Lib::path3Lib() {
   drawFinishPacket = packet2_create(3, P2_TYPE_NORMAL, P2_MODE_CHAIN, false);
   clearScreenPacket = packet2_create(36, P2_TYPE_NORMAL, P2_MODE_CHAIN, false);
   texturePacket = packet2_create(128, P2_TYPE_NORMAL, P2_MODE_CHAIN, false);
@@ -148,24 +126,24 @@ Path3::Path3() {
   packet2_chain_close_tag(drawFinishPacket);
 }
 
-Path3::~Path3() {
+path3Lib::~path3Lib() {
   packet2_free(drawFinishPacket);
   packet2_free(clearScreenPacket);
   packet2_free(texturePacket);
 }
 
-void Path3::init() {
+void path3Lib::init() {
   dma_channel_initialize(DMA_CHANNEL_GIF, nullptr, 0);
 
   TYRA_LOG("Path3 initialized");
 }
 
-void Path3::sendDrawFinishTag() {
+void path3Lib::sendDrawFinishTag() {
   dma_channel_wait(DMA_CHANNEL_GIF, 0);
   dma_channel_send_packet2(drawFinishPacket, DMA_CHANNEL_GIF, true);
 }
 
-void Path3::clearScreen(zbuffer_t* z, const Color& color) {
+void path3Lib::clearScreen(zbuffer_t* z, const Color& color) {
   packet2_reset(clearScreenPacket, false);
   packet2_chain_open_end(clearScreenPacket, 0, 0);
   packet2_update(clearScreenPacket,
@@ -185,7 +163,7 @@ void Path3::clearScreen(zbuffer_t* z, const Color& color) {
   dma_channel_send_packet2(clearScreenPacket, DMA_CHANNEL_GIF, true);
 }
 
-void Path3::sendTexture(const Texture* texture,
+void path3Lib::sendTexture(const Texture* texture,
                         const RendererCoreTextureBuffers& texBuffers) {
   packet2_reset(texturePacket, false);
 
@@ -218,12 +196,12 @@ void Path3::sendTexture(const Texture* texture,
 }
 
 static Path1 path1;
-static Path3 path3;
+static path3Lib path3;
 
-class RendererCoreTextureSender {
+class RendererCoreTextureSenderLib {
  public:
-  RendererCoreTextureSender();
-  ~RendererCoreTextureSender();
+  RendererCoreTextureSenderLib();
+  ~RendererCoreTextureSenderLib();
 
   void init();
 
@@ -239,14 +217,14 @@ class RendererCoreTextureSender {
   texbuffer_t* allocateTextureClut(const Texture* t_texture);
 };
 
-RendererCoreTextureSender::RendererCoreTextureSender() {}
-RendererCoreTextureSender::~RendererCoreTextureSender() {}
+RendererCoreTextureSenderLib::RendererCoreTextureSenderLib() {}
+RendererCoreTextureSenderLib::~RendererCoreTextureSenderLib() {}
 
-void RendererCoreTextureSender::init() {
+void RendererCoreTextureSenderLib::init() {
   TYRA_LOG("Renderer texture initialized!");
 }
 
-RendererCoreTextureBuffers RendererCoreTextureSender::allocate(
+RendererCoreTextureBuffers RendererCoreTextureSenderLib::allocate(
     const Texture* t_texture) {
   texbuffer_t* core = allocateTextureCore(t_texture);
   texbuffer_t* clut = nullptr;
@@ -258,14 +236,14 @@ RendererCoreTextureBuffers RendererCoreTextureSender::allocate(
   return {t_texture->id, core, clut};
 }
 
-float RendererCoreTextureSender::getSizeInMB(texbuffer_t* texBuffer) {
+float RendererCoreTextureSenderLib::getSizeInMB(texbuffer_t* texBuffer) {
   auto bpp = getBppByPsm(texBuffer->psm);
   auto width = pow(2, texBuffer->info.width);
   auto height = pow(2, texBuffer->info.height);
   return (width / 100.0F) * (height / 100.0F) * (bpp / 100.0F) / 8.0F;
 }
 
-void RendererCoreTextureSender::deallocate(
+void RendererCoreTextureSenderLib::deallocate(
     const RendererCoreTextureBuffers& texBuffers) {
   if (texBuffers.clut != nullptr && texBuffers.clut->width > 0) {
     rendererGS.vram.free(texBuffers.clut->address);
@@ -277,7 +255,7 @@ void RendererCoreTextureSender::deallocate(
   delete texBuffers.core;
 }
 
-texbuffer_t* RendererCoreTextureSender::allocateTextureCore(
+texbuffer_t* RendererCoreTextureSenderLib::allocateTextureCore(
     const Texture* t_texture) {
   auto* result = new texbuffer_t;
   const auto* core = t_texture->core;
@@ -298,7 +276,7 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureCore(
   result->psm = core->psm;
   result->info.components = core->components;
 
-  auto address = gs->vram.allocate(*core);
+  auto address = rendererGS.vram.allocate(*core);
   TYRA_ASSERT(address > 0, "Texture buffer allocation error, no memory!");
   result->address = address;
 
@@ -308,7 +286,7 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureCore(
   return result;
 }
 
-texbuffer_t* RendererCoreTextureSender::allocateTextureClut(
+texbuffer_t* RendererCoreTextureSenderLib::allocateTextureClut(
     const Texture* t_texture) {
   auto* result = new texbuffer_t;
   const auto* clut = t_texture->clut;
@@ -319,7 +297,7 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureClut(
   result->psm = clut->psm;
   result->info.components = clut->components;
 
-  auto address = rendererGS.gs.vram.allocate(*clut);
+  auto address = rendererGS.vram.allocate(*clut);
   TYRA_ASSERT(address > 0, "Texture clut buffer allocation error, no memory!");
   result->address = address;
 
@@ -329,7 +307,7 @@ texbuffer_t* RendererCoreTextureSender::allocateTextureClut(
   return result;
 }
 
-TextureBpp RendererCoreTextureSender::getBppByPsm(const u32& psm) {
+TextureBpp RendererCoreTextureSenderLib::getBppByPsm(const u32& psm) {
   if (psm == GS_PSM_32) {
     return bpp32;
   } else if (psm == GS_PSM_24) {
@@ -344,7 +322,7 @@ TextureBpp RendererCoreTextureSender::getBppByPsm(const u32& psm) {
   }
 }
 
-static RendererCoreTextureSender sender;
+static RendererCoreTextureSenderLib sender;
 
 class EngineRendererCoreTexture {
  public:
@@ -406,7 +384,7 @@ RendererCoreTextureBuffers EngineRendererCoreTexture::useTexture(
   auto allocated = getAllocatedBuffersByTextureId(t_tex->id);
   if (allocated.id != 0) return allocated;
 
-  if (gs->vram.getSizeInMB(*t_tex) >= gs->vram.getFreeSpaceInMB()) {
+  if (rendererGS.vram.getSizeInMB(*t_tex) >= rendererGS.vram.getFreeSpaceInMB()) {
     for (int i = currentAllocations.size() - 1; i >= 0; i--) {
       sender.deallocate(currentAllocations[i]);
     }
@@ -466,6 +444,8 @@ void EngineRendererCoreTexture::initClut() {
 }
 
 static EngineRendererCoreTexture engineCoreTexture;
+
+TextureRepository& getTextureRepository() { return engineCoreTexture.repository;}
 
 class EngineRenderer3DFrustumPlanes {
  public:
@@ -579,10 +559,10 @@ std::string EngineRenderer3DFrustumPlanes::getPrint(const char* name) const {
   return res.str();
 }
 
-class RendererCore3D {
+class RendererCore3DLib {
  public:
-  RendererCore3D();
-  ~RendererCore3D();
+  RendererCore3DLib();
+  ~RendererCore3DLib();
 
   /** Current camera frustum planes. */
   EngineRenderer3DFrustumPlanes frustumPlanes;
@@ -651,63 +631,63 @@ class RendererCore3D {
   void setProjection();
 };
 
-RendererCore3D::RendererCore3D() {
+RendererCore3DLib::RendererCore3DLib() {
   fov = 60.0F;
   is3DSupportEnabled = false;
 }
-RendererCore3D::~RendererCore3D() {}
+RendererCore3DLib::~RendererCore3DLib() {}
 
-void RendererCore3D::update() { is3DSupportEnabled = false; }
+void RendererCore3DLib::update() { is3DSupportEnabled = false; }
 
-void RendererCore3D::update(const CameraInfo3D& cameraInfo) {
+void RendererCore3DLib::update(const CameraInfo3D& cameraInfo) {
   frustumPlanes.update(cameraInfo, fov);
   M4x4::lookAt(&view, *cameraInfo.position, *cameraInfo.looksAt);
   viewProj = projection * view;
   is3DSupportEnabled = true;
 }
 
-void RendererCore3D::init() {
+void RendererCore3DLib::init() {
   frustumPlanes.init(fov);
   setProjection();
-  TYRA_LOG("RendererCore3D initialized!");
+  TYRA_LOG("RendererCore3DLib initialized!");
 }
 
-const M4x4& RendererCore3D::getView() {
+const M4x4& RendererCore3DLib::getView() {
   TYRA_ASSERT(is3DSupportEnabled,
               "You can't compute 3D without camera information. Please correct "
               "your beginFrame()");
   return view;
 }
 
-const M4x4& RendererCore3D::getViewProj() {
+const M4x4& RendererCore3DLib::getViewProj() {
   TYRA_ASSERT(is3DSupportEnabled,
               "You can't compute 3D without camera information. Please correct "
               "your beginFrame()");
   return viewProj;
 }
 
-void RendererCore3D::setFov(const float& t_fov) {
+void RendererCore3DLib::setFov(const float& t_fov) {
   fov = t_fov;
   setProjection();
 }
 
-void RendererCore3D::setProjection() {
+void RendererCore3DLib::setProjection() {
   projection = M4x4::perspective(
       fov, core.width, core.height,
       core.projectionScale, core.aspectRatio,
       core.near, core.far);
 }
 
-u32 RendererCore3D::uploadVU1Program(VU1Program* program, const u32& address) {
+u32 RendererCore3DLib::uploadVU1Program(VU1Program* program, const u32& address) {
   return path1.uploadProgram(program, address);
 }
 
-void RendererCore3D::setVU1DoubleBuffers(const u16& startingAddress,
+void RendererCore3DLib::setVU1DoubleBuffers(const u16& startingAddress,
                                          const u16& bufferSize) {
   path1.setDoubleBuffer(startingAddress, bufferSize);
 }
 
-static RendererCore3D engineCore3D;
+static RendererCore3DLib engineCore3D;
 
 class EngineRendererCore2D {
  public:
@@ -835,7 +815,7 @@ void EngineRendererCore2D::render(const Sprite& sprite,
   packet2_utils_gif_add_set(packet, 1);
   packet2_utils_gs_add_lod(packet, &lod);
   packet2_utils_gif_add_set(packet, 1);
-  packet2_utils_gs_add_texbuff_clut(packet, texBuffers.core, engineCoreTexture.clut);
+  packet2_utils_gs_add_texbuff_clut(packet, texBuffers.core, &engineCoreTexture.clut);
   draw_enable_blending();
   packet2_update(packet, draw_rect_textured(packet->next, 0, rect));
 
@@ -868,10 +848,10 @@ static EngineRendererCore2D engineCore2D;
  * wait() for it. Without it, there is risk for example to send new texture
  * during drawing with previous one.
  */
-class RendererCoreSync {
+class RendererCoreSyncLib {
  public:
-  RendererCoreSync();
-  ~RendererCoreSync();
+  RendererCoreSyncLib();
+  ~RendererCoreSyncLib();
 
   void init(/*Path3* path3, Path1* path1*/);
 
@@ -894,45 +874,45 @@ class RendererCoreSync {
   void addPath1Req(packet2_t* packet);
 };
 
-RendererCoreSync::RendererCoreSync() {}
-RendererCoreSync::~RendererCoreSync() {}
+RendererCoreSyncLib::RendererCoreSyncLib() {}
+RendererCoreSyncLib::~RendererCoreSyncLib() {}
 
-void RendererCoreSync::init() {
+void RendererCoreSyncLib::init() {
   // path3 = t_path3;
   // path1 = t_path1;
 }
 
-void RendererCoreSync::align3D() {
+void RendererCoreSyncLib::align3D() {
   clear();
   sendPath1Req();
   waitAndClear();
 }
 
-void RendererCoreSync::align2D() {
+void RendererCoreSyncLib::align2D() {
   clear();
   sendPath3Req();
   waitAndClear();
 }
 
-void RendererCoreSync::sendPath1Req() { path1.sendDrawFinishTag(); }
+void RendererCoreSyncLib::sendPath1Req() { path1.sendDrawFinishTag(); }
 
-void RendererCoreSync::sendPath3Req() { path3.sendDrawFinishTag(); }
+void RendererCoreSyncLib::sendPath3Req() { path3.sendDrawFinishTag(); }
 
-void RendererCoreSync::addPath1Req(packet2_t* packet) {
+void RendererCoreSyncLib::addPath1Req(packet2_t* packet) {
   path1.addDrawFinishTag(packet);
 }
 
-u8 RendererCoreSync::check() { return *GS_REG_CSR & 2; }
+u8 RendererCoreSyncLib::check() { return *GS_REG_CSR & 2; }
 
-void RendererCoreSync::clear() { *GS_REG_CSR |= 2; }
+void RendererCoreSyncLib::clear() { *GS_REG_CSR |= 2; }
 
-void RendererCoreSync::waitAndClear() {
+void RendererCoreSyncLib::waitAndClear() {
   while (!check()) {
   }
   clear();
 }
 
-static RendererCoreSync engineCoreSync;
+static RendererCoreSyncLib engineCoreSync;
 
 void initChannels() {
   dma_channel_initialize(DMA_CHANNEL_GIF, nullptr, 0);
@@ -943,21 +923,21 @@ void allocateBuffers() {
   rendererGS.frameBuffers[0].height = static_cast<unsigned int>(core.height);
   rendererGS.frameBuffers[0].mask = 0;
   rendererGS.frameBuffers[0].psm = GS_PSM_32;
-  rendererGS.frameBuffers[0].address = vram.allocateBuffer(
+  rendererGS.frameBuffers[0].address = rendererGS.vram.allocateBuffer(
       rendererGS.frameBuffers[0].width, rendererGS.frameBuffers[0].height, rendererGS.frameBuffers[0].psm);
 
   rendererGS.frameBuffers[1].width = rendererGS.frameBuffers[0].width;
   rendererGS.frameBuffers[1].height = rendererGS.frameBuffers[0].height;
   rendererGS.frameBuffers[1].mask = rendererGS.frameBuffers[0].mask;
   rendererGS.frameBuffers[1].psm = rendererGS.frameBuffers[0].psm;
-  rendererGS.frameBuffers[1].address = vram.allocateBuffer(
+  rendererGS.frameBuffers[1].address = rendererGS.vram.allocateBuffer(
       rendererGS.frameBuffers[1].width, rendererGS.frameBuffers[1].height, rendererGS.frameBuffers[1].psm);
 
   rendererGS.zBuffer.enable = DRAW_ENABLE;
   rendererGS.zBuffer.mask = 0;
   rendererGS.zBuffer.method = ZTEST_METHOD_GREATER_EQUAL;
   rendererGS.zBuffer.zsm = GS_ZBUF_32;
-  rendererGS.zBuffer.address = vram.allocateBuffer(rendererGS.frameBuffers[0].width,
+  rendererGS.zBuffer.address = rendererGS.vram.allocateBuffer(rendererGS.frameBuffers[0].width,
                                         rendererGS.frameBuffers[0].height, rendererGS.zBuffer.zsm);
 
   graph_initialize(rendererGS.frameBuffers[1].address, rendererGS.frameBuffers[1].width,
@@ -980,7 +960,7 @@ void allocateBuffers() {
 void enableZTests() {
   packet2_reset(rendererGS.zTestPacket, false);
   packet2_update(rendererGS.zTestPacket,
-                 draw_enable_tests(rendererGS.zTestPacket->base, 0, &zBuffer));
+                 draw_enable_tests(rendererGS.zTestPacket->base, 0, &rendererGS.zBuffer));
   packet2_update(rendererGS.zTestPacket, draw_finish(rendererGS.zTestPacket->next));
   dma_channel_wait(DMA_CHANNEL_GIF, 0);
   dma_channel_send_packet2(rendererGS.zTestPacket, DMA_CHANNEL_GIF, true);
@@ -992,8 +972,8 @@ void initDrawingEnvironment() {
                                                  &rendererGS.zBuffer));
   packet2_update(
       packet2, draw_primitive_xyoffset(packet2->next, 0,
-                                       rendererGS.screenCenter - (core.width() / 2.0F),
-                                       rendererGS.screenCenter - (core.height() / 2.0F)));
+                                       rendererGS.screenCenter - (core.width / 2.0F),
+                                       rendererGS.screenCenter - (core.height / 2.0F)));
   packet2_update(packet2, draw_finish(packet2->next));
   dma_channel_send_packet2(packet2, DMA_CHANNEL_GIF, true);
   dma_channel_wait(DMA_CHANNEL_GIF, 0);
@@ -1025,7 +1005,7 @@ void flipBuffers() {
   rendererGS.context ^= 1;
 
   packet2_update(rendererGS.flipPacket,
-                 draw_framebuffer(flipPacket->base, 0, &frameBuffers[rendererGS.context]));
+                 draw_framebuffer(rendererGS.flipPacket->base, 0, &rendererGS.frameBuffers[rendererGS.context]));
   // Interlacing test
   // packet2_update(
   //     flipPacket,
@@ -1070,10 +1050,22 @@ void beginFrame() {
 void endFrame(){
   Threading::switchThread();
   if (isFrameLimitOn) graph_wait_vsync();
-  rendererGS.flipBuffers();
+  flipBuffers();
 }
 
 void setClearScreenColor(const Color& color) { bgColor = color; }
+
+void render(const Sprite& sprite) {
+  auto* texture = engineCoreTexture.repository.getBySpriteId(sprite.id);
+
+  TYRA_ASSERT(
+      texture, "Texture for sprite with id: ", sprite.id,
+      "Was not found in texture repository! Did you forget to add texture?");
+
+  auto texBuffers = engineCoreTexture.useTexture(texture);
+  engineCoreTexture.updateClutBuffer(texBuffers.clut);
+  engineCore2D.render(sprite, texBuffers, texture);
+}
 
 void showBanner(){
   auto* bannerData = ___createTyraSplashBanner();
@@ -1100,7 +1092,7 @@ void showBanner(){
 
   for (int i = 0; i < 2; i++) {
     beginFrame();
-    renderer->renderer2D.render(&sprite);
+    render(sprite);
     endFrame();
   }
 
@@ -1125,13 +1117,16 @@ void showBanner(){
 }
 static Audio audio;
 static Pad pad;
+static Info info;
+static IrxLoader irx;
+
 void InitEngine(const EngineOptions& options) {
   info.writeLogsToFile = options.writeLogsToFile;
   srand(time(nullptr));
   irx.loadAll(options.loadUsbDriver, info.writeLogsToFile);
   // renderer.init();
   path3.init();
-  engineCoreSync.init(); // no hace nada
+  // engineCoreSync.init(); // no hace nada
   initCoreGS();
   engineCoreTexture.init();
   engineCore3D.init();
